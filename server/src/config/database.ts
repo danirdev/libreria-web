@@ -1,3 +1,4 @@
+// filepath: d:\programacion\proyectos\proyecto-libreria\server\src\config\database.ts
 import pg from 'pg';
 import dotenv from 'dotenv';
 
