@@ -40,6 +40,43 @@ app.get( '/api/products', async ( req: Request, res: Response ) =>
   }
 } );
 
+// Nueva ruta: Crear un producto
+app.post( '/api/products', async ( req: Request, res: Response ) =>
+{
+  try
+  {
+    // 1. Desestructuramos los datos que vienen del Frontend (body)
+    const { nombre, precio, categoria, stock, imagen_url } = req.body;
+
+    // 2. Validación básica (TypeScript ayuda, pero siempre validamos datos externos)
+    if ( !nombre || !precio )
+    {
+      res.status( 400 ).json( { error: 'El nombre y el precio son obligatorios' } );
+      return; // Importante el return para detener la ejecución
+    }
+
+    // 3. Insertamos en la base de datos
+    // El "RETURNING *" hace que Postgres nos devuelva el producto creado con su nuevo ID
+    const query = `
+      INSERT INTO productos (nombre, precio, categoria, stock, imagen_url)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *
+    `;
+
+    const values = [ nombre, precio, categoria, stock || 0, imagen_url || null ];
+
+    const resultado = await pool.query<Producto>( query, values );
+
+    // 4. Respondemos con el producto creado (Status 201 = Created)
+    res.status( 201 ).json( resultado.rows[ 0 ] );
+
+  } catch ( error )
+  {
+    console.error( error );
+    res.status( 500 ).json( { error: 'Error al crear el producto' } );
+  }
+} );
+
 app.listen( PORT, () =>
 {
   console.log( `🚀 Servidor TS corriendo en http://localhost:${ PORT }` );
