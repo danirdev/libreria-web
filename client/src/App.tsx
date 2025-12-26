@@ -1,73 +1,76 @@
+import { Routes, Route, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import './index.css'; // Asegúrate de importar los estilos si no están en main.tsx
+import Admin from './Admin';
 
-// 1. Definimos la "Interface": El contrato de cómo luce un producto
-interface Producto {
+// Definición de tipos
+interface Producto
+{
   id: number;
   nombre: string;
-  descripcion: string;
-  precio: string; // Postgres suele devolver NUMERIC como string para no perder precisión
+  precio: number; // En el JSON viene como string, pero lo parsearemos
   categoria: string;
-  stock: number;
-  imagen_url: string | null; // Puede ser null si no tiene foto
+  imagen_url: string | null;
 }
 
-function App() {
-  // 2. Usamos el Generico <Producto[]> para decirle a useState qué va a guardar
-  const [productos, setProductos] = useState<Producto[]>([]);
-  const [cargando, setCargando] = useState<boolean>(true);
+// Componente para la página de Inicio (Catálogo)
+function Catalogo ()
+{
+  const [ productos, setProductos ] = useState<Producto[]>( [] );
 
-  useEffect(() => {
-    fetch('http://localhost:3000/api/products')
-      .then((res) => res.json())
-      .then((data: Producto[]) => { // Forzamos el tipo aquí
-        setProductos(data);
-        setCargando(false);
-      })
-      .catch((err) => {
-        console.error("Error cargando productos:", err);
-        setCargando(false);
-      });
-  }, []);
+  useEffect( () =>
+  {
+    fetch( 'http://localhost:3000/api/products' )
+      .then( res => res.json() )
+      .then( data => setProductos( data ) )
+      .catch( err => console.error( err ) );
+  }, [] );
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <header className="mb-8 text-center">
-        <h1 className="text-4xl font-bold text-blue-700 mb-2">Librería & Fotocopias</h1>
-        <p className="text-gray-600">Todo lo que necesitas para estudiar y trabajar</p>
-      </header>
-
-      {cargando ? (
-        <p className="text-center text-xl">Cargando catálogo...</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          {productos.map((producto) => (
-            <div key={producto.id} className="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow border-t-4 border-blue-500">
-              
-              <div className="h-40 bg-gray-200 rounded mb-4 flex items-center justify-center text-gray-400">
-                {producto.imagen_url ? (
-                  <img src={producto.imagen_url} alt={producto.nombre} className="h-full w-full object-cover rounded" />
-                ) : (
-                  <span>Sin Imagen</span>
-                )}
-              </div>
-
-              <h2 className="text-xl font-bold text-gray-800">{producto.nombre}</h2>
-              <p className="text-sm text-gray-500 uppercase tracking-wide">{producto.categoria}</p>
-              
-              <div className="mt-4 flex justify-between items-center">
-                {/* Convertimos el precio a Number para mostrarlo bonito con $ */}
-                <span className="text-2xl font-bold text-green-600">
-                  ${Number(producto.precio).toFixed(2)}
-                </span>
-                <button className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-                  Agregar
-                </button>
-              </div>
+    <div className="max-w-6xl mx-auto p-4">
+      <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Nuestro Catálogo</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        { productos.map( ( prod ) => (
+          <div key={ prod.id } className="bg-white p-4 rounded shadow border hover:border-blue-500 transition">
+            <div className="h-40 bg-gray-100 rounded mb-4 flex items-center justify-center overflow-hidden">
+              { prod.imagen_url ? (
+                <img src={ prod.imagen_url } alt={ prod.nombre } className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-gray-400">Sin foto</span>
+              ) }
             </div>
-          ))}
+            <h3 className="font-bold text-lg">{ prod.nombre }</h3>
+            <p className="text-sm text-gray-500">{ prod.categoria }</p>
+            <p className="text-xl font-bold text-green-600 mt-2">${ Number( prod.precio ) }</p>
+          </div>
+        ) ) }
+      </div>
+    </div>
+  );
+}
+
+// App Principal con Rutas
+function App ()
+{
+  return (
+    <div className="min-h-screen bg-gray-50 text-gray-900">
+      {/* Barra de Navegación */ }
+      <nav className="bg-blue-700 text-white p-4 shadow-md">
+        <div className="max-w-6xl mx-auto flex justify-between items-center">
+          <Link to="/" className="text-2xl font-bold">📚 Librería Web</Link>
+          <div className="space-x-4">
+            <Link to="/" className="hover:text-blue-200">Catálogo</Link>
+            <Link to="/admin" className="bg-white text-blue-700 px-3 py-1 rounded font-bold hover:bg-gray-100">Panel Admin</Link>
+          </div>
         </div>
-      )}
+      </nav>
+
+      {/* Aquí cambiamos de página según la URL */ }
+      <div className="py-8">
+        <Routes>
+          <Route path="/" element={ <Catalogo /> } />
+          <Route path="/admin" element={ <Admin /> } />
+        </Routes>
+      </div>
     </div>
   );
 }
