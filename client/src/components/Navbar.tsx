@@ -1,7 +1,16 @@
-import { Link } from 'react-router-dom';
-import { ShoppingBag, Home as HomeIcon } from 'lucide-react'; // Usamos los iconos nuevos
+// filepath: client/src/components/Navbar.tsx
+import { Link, useNavigate } from 'react-router-dom';
+import { ShoppingBag, Home as HomeIcon, LogOut } from 'lucide-react';
 
 export default function Navbar() {
+  const navigate = useNavigate();
+  const token = localStorage.getItem('token');
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/login');
+  };
+
   return (
     <nav className="bg-white shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -31,14 +40,17 @@ export default function Navbar() {
               Tienda
             </Link>
 
-            {/* Botón Admin discreto */}
-            <Link
-              to="/admin"
-              className="text-gray-400 hover:text-gray-600 text-sm"
-              title="Acceso Admin"
-            >
-              🔐
-            </Link>
+            {/* Si hay token, mostramos Logout. Si no, nada (para que sea oculto) */}
+            {token && (
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-1 text-red-500 hover:text-red-700 font-medium ml-4"
+                title="Cerrar Sesión"
+              >
+                <LogOut size={18} />
+                <span className="hidden md:inline">Salir</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

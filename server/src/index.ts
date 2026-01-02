@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { config } from './config/environment.js';
 import productoRoutes from './routes/producto.routes.js';
+import authRoutes from './routes/auth.routes.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 const app = express();
@@ -16,12 +17,13 @@ app.get('/', (req, res) => {
     message: '📚 API Librería - Servidor funcionando',
     version: '1.0.0',
     endpoints: {
-      products: '/api/products'
-    }
+      products: '/api/products',
+    },
   });
 });
 
 // Rutas de la API
+app.use('/api/auth', authRoutes);
 app.use('/api/products', productoRoutes);
 
 // Manejo de errores
